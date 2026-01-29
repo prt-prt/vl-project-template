@@ -109,12 +109,3 @@ jobs:
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Save vvvv cache
-        if: always()
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            ${{ env.VVVV_INSTALL_DIR }}
-            ${{ env.VVVV_SETUP_PATH }}
-          key: vvvv-${{ runner.os }}-${{ env.VVVV_VERSION }}-${{ env.VVVV_BUILD_ID }}
