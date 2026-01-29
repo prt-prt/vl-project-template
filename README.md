@@ -40,7 +40,7 @@ https://thegraybook.vvvv.org/reference/best-practice/version-control.html#versio
 
 ### Package repositores / Git submodules
 
-In case your project needs to use a VL library from source (often the case when using a fork of VL.Fuse in a project), please add them to a folder called `package-repositories` inside of your project and include it in the batch file. Don’t forget to add the libraries to the `--editable-packages` flag, otherwise they will be pre-compiled in your project. Afterwards use a Git client that supports submodules.
+In case your project needs to use a VL library from source (often the case when using a fork of VL.Fuse in a project), please add them to a folder called `package-repositories` inside of your project and include it in the batch file. Don't forget to add the libraries to the `--editable-packages` flag, otherwise they will be pre-compiled in your project. Afterwards use a Git client that supports submodules.
 
 ```jsx
 taskkill /f /im vvvv.exe
@@ -55,15 +55,14 @@ This template includes a build system to compile your VL project into a standalo
 
 ### How it works
 
-When you push a git tag like `v1.0.0`, GitHub Actions automatically:
+When you push a git tag like `v1.0.0`, GitHub Actions automatically runs the `Release` workflow. Optionally, run the `Cache vvvv` workflow ahead of time to warm the cache (the release workflow will restore it if present). The release workflow then:
 
-1. (Manual) Warms the vvvv cache via the `Cache vvvv` workflow
-2. Downloads vvvv gamma from the official vvvv TeamCity server (first run only)
-3. Caches the installer and installation directory for later runs
-4. Silently installs it on the runner if not already cached
-5. Compiles your project using `vvvvc.exe`
-6. Creates a portable `.zip` file containing the standalone application
-7. Publishes it as a GitHub release that users can download
+1. Restores the vvvv cache if present (from a prior `Cache vvvv` run)
+2. Downloads vvvv gamma from the official vvvv TeamCity server (only if not already cached)
+3. Silently installs it on the runner if not already cached
+4. Compiles your project using `vvvvc.exe`
+5. Creates a portable `.zip` file containing the standalone application
+6. Publishes it as a GitHub release that users can download
 
 ### Setup for your project
 
@@ -81,7 +80,7 @@ Also update the reference inside `YourProject.bat` to point to the renamed `.vl`
 
 #### 2. Configure the GitHub workflow
 
-Edit `.github/workflows/release.yml` and update the environment variables at the top:
+Edit `.github/workflows/release.yml` (and `.github/workflows/cache-vvvv.yml` if you want the cache workflow to match) and update the environment variables at the top:
 
 ```yaml
 env:
@@ -124,7 +123,7 @@ The workflow downloads vvvv gamma from the official TeamCity build server. To us
    https://teamcity.vvvv.org/guestAuth/app/rest/builds/id:39385/artifacts/content/vvvv_gamma_7.0-win-x64_setup.exe
    ```
 4. Extract the **build ID** (e.g., `39385`) and **version** (e.g., `7.0`) from the URL
-5. Update the workflow environment variables:
+5. Update the workflow environment variables (in both `release.yml` and `cache-vvvv.yml` if you use the cache workflow):
    ```yaml
    VVVV_VERSION: "7.0"
    VVVV_BUILD_ID: "39385"
@@ -150,7 +149,7 @@ You can monitor the build progress in the **Actions** tab of your GitHub reposit
 
 To avoid long downloads on release runs, warm the vvvv cache manually:
 
-1. Go to **Actions** → **Cache vvvv**
+1. Go to **Actions** -> **Cache vvvv**
 2. Click **Run workflow**
 3. Choose the default branch and start the run
 
@@ -179,11 +178,11 @@ After a successful build, you'll find:
 
 ```
 artifacts/
-├── win-x64/
-│   └── YourProject/
-│       ├── YourProject.exe    # The standalone application
-│       └── ...                # Dependencies and resources
-└── yourproject_1.0.0_win-x64.zip  # Portable distribution
+|-- win-x64/
+|   `-- YourProject/
+|       |-- YourProject.exe    # The standalone application
+|       `-- ...                # Dependencies and resources
+`-- yourproject_1.0.0_win-x64.zip  # Portable distribution
 ```
 
 The `.zip` file is what gets uploaded to GitHub releases. Users can download it, extract, and run `YourProject.exe` directly.
