@@ -25,16 +25,16 @@ class Build : NukeBuild
     // =======================================================
 
     string Version = "";
-    string ResolvedProjectName => ProjectName ?? Path.GetFileName(RootDirectory / ..);
+    string ResolvedProjectName => ProjectName ?? Path.GetFileName(RootDirectory);
 
     const string RuntimeId = "win-x64";
 
-    AbsolutePath ArtifactsDirectory => RootDirectory / .. / "artifacts";
-    AbsolutePath VersionFile => RootDirectory / .. / "Version.props";
+    AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
+    AbsolutePath VersionFile => RootDirectory / "Version.props";
 
     // These will be resolved based on project name
-    AbsolutePath VvvvPropsFile => RootDirectory / .. / $"{ResolvedProjectName}.props";
-    AbsolutePath VvvvSourceFile => RootDirectory / .. / $"{ResolvedProjectName}.vl";
+    AbsolutePath VvvvPropsFile => RootDirectory / $"{ResolvedProjectName}.props";
+    AbsolutePath VvvvSourceFile => RootDirectory / $"{ResolvedProjectName}.vl";
 
     // =======================================================
     // TARGETS

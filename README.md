@@ -51,17 +51,19 @@ exit
 
 ## Build Automation & Releases
 
-This template includes a build system to compile your VL project into a standalone `.exe` and publish it as a GitHub release. The GitHub Actions workflow automatically downloads and installs vvvv gamma, so no self-hosted runner is required.
+This template includes a build system to compile your VL project into a standalone `.exe` and publish it as a GitHub release. The GitHub Actions workflow automatically downloads and installs vvvv gamma, so no self-hosted runner is required. A cache is used so subsequent runs are faster and is warmed via a separate manual workflow.
 
 ### How it works
 
 When you push a git tag like `v1.0.0`, GitHub Actions automatically:
 
-1. Downloads vvvv gamma from the official vvvv TeamCity server
-2. Silently installs it on the runner
-3. Compiles your project using `vvvvc.exe`
-4. Creates a portable `.zip` file containing the standalone application
-5. Publishes it as a GitHub release that users can download
+1. (Manual) Warms the vvvv cache via the `Cache vvvv` workflow
+2. Downloads vvvv gamma from the official vvvv TeamCity server (first run only)
+3. Caches the installer and installation directory for later runs
+4. Silently installs it on the runner if not already cached
+5. Compiles your project using `vvvvc.exe`
+6. Creates a portable `.zip` file containing the standalone application
+7. Publishes it as a GitHub release that users can download
 
 ### Setup for your project
 
@@ -91,7 +93,20 @@ env:
   VVVV_BUILD_ID: "39385"
 ```
 
-#### 3. Configure compiler settings (optional)
+#### 3. Configure build defaults (optional)
+
+The build uses a new-style `.nuke` directory and reads defaults from `.nuke/parameters.json`.
+Edit it to set your local compiler path and project name if you want `nuke/build.cmd Compile`
+to work without extra arguments:
+
+```json
+{
+  "CompilerPath": "C:\\vvvv\\vvvvc.exe",
+  "ProjectName": "YourProject"
+}
+```
+
+#### 4. Configure compiler settings (optional)
 
 Edit `YourProject.props` to customize build settings:
 
@@ -131,13 +146,23 @@ The workflow triggers automatically when a tag starting with `v` is pushed. The 
 
 You can monitor the build progress in the **Actions** tab of your GitHub repository.
 
+### Cache vvvv (manual)
+
+To avoid long downloads on release runs, warm the vvvv cache manually:
+
+1. Go to **Actions** → **Cache vvvv**
+2. Click **Run workflow**
+3. Choose the default branch and start the run
+
+This run only refreshes the cache and does not build a release.
+
 ### Local builds
 
 You can also build locally without GitHub Actions:
 
 ```bash
 # From the project root
-nuke/build.cmd Compile --compilerpath "C:\Program Files\vvvv\vvvv_gamma_7.0-win-x64\vvvvc.exe"
+nuke/build.cmd Compile
 
 # Or specify project name explicitly
 nuke/build.cmd Compile --compilerpath "C:\path\to\vvvvc.exe" --projectname "YourProject"
