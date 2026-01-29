@@ -11,3 +11,9 @@ bin/
 # Other
 obj/
 .vs/
+
+# Build artifacts
+artifacts/
+
+# NUKE build system
+nuke/.nuke/
